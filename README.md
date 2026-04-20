@@ -1,8 +1,8 @@
 # CodeFlow
 
-**Visual dependency graphs for any function in your codebase.**
+**Dependency graphs and interactive visualisations for any function in your codebase.**
 
-Highlight a function in VS Code, run a command, and instantly see everything that calls it and everything it calls — rendered as an interactive graph inside your editor. No context switching, no copy-pasting into AI chat, no manually tracing through files.
+Highlight a function in VS Code, run a command, and get two things instantly — a dependency graph showing everything that calls it and everything it calls, and an AI-generated interactive simulation showing how the function actually behaves with real data. No context switching, no copy-pasting into AI chat, no manually tracing through files.
 
 ---
 
@@ -22,9 +22,13 @@ Today you answer those questions by grepping, scrolling, and building a mental m
 
 1. Highlight a function name in your Python file
 2. Open the command palette and run `CodeFlow: Show Dependencies`
-3. A graph panel opens alongside your editor showing the full dependency picture
+3. Two panels open alongside your editor
 
-Each node shows the function name, its class, and the file it lives in. Click any node to highlight its connections. The graph updates every time you run the command on a new function.
+**Panel 1 — dependency graph.** Shows every function that calls yours (callers) and every function yours calls (callees), with the class name and file for each node. Click any node to highlight its connections.
+
+**Panel 2 — interactive visualisation.** An AI-generated simulation of your function's behaviour using real data shapes inferred from your actual codebase. Not a static diagram — a live widget you can interact with.
+
+The whole flow takes under 3 seconds from highlight to rendered output.
 
 ---
 
@@ -74,21 +78,31 @@ Click any node to see its class, file path, and relationship. Click the backgrou
 
 ---
 
-## How it analyses your code
+## How it works under the hood
 
-CodeFlow uses **Tree-sitter** to parse your Python files statically — no code execution, no AI, no network requests. Everything runs locally on your machine.
+CodeFlow has two distinct pipelines that run in sequence every time you trigger the command.
 
-The analyser is written in Python (`analyser.py`) and called by the VS Code extension as a subprocess. It scans your workspace on startup, builds a map of every function, which class it belongs to, and what it calls. When you trigger the command, the extension calls the analyser with the highlighted function name, gets back JSON, and renders the graph instantly using **Cytoscape.js**.
+**Pipeline 1 — the dependency analyser**
+
+`analyser.py` uses Tree-sitter to parse your Python files statically — no code execution, no network requests. It does two passes: first it walks every `.py` file in your workspace and builds an in-memory map of every function, its class, its file, and what it calls. Then it queries that map for your highlighted function — callees come directly from the map entry, callers come from a reverse lookup across the whole map.
+
+The output is a JSON package containing the full function body, caller signatures, and callee signatures. Signatures are used instead of full dependency code to keep the context lightweight without losing meaning.
+
+**Pipeline 2 — the AI visualisation**
+
+The JSON package from Pipeline 1 is sent to an AI with a prompt asking it to generate an interactive HTML simulation. Because the AI receives real class names, real file paths, and real function signatures from your actual codebase — not just a pasted snippet — the simulation it generates is grounded in your specific architecture. The returned HTML is injected directly into the VS Code webview panel.
 
 **What it handles well**
 - Standard function and method calls
 - Calls across files and modules
 - Class method attribution
+- Sequential transformation pipelines, algorithmic functions, state-based logic
 
 **Current limitations (PoC)**
 - Python only — Java, C++, and TypeScript support planned
 - Dynamic calls (functions stored in variables and called later) are not tracked
 - External library calls are shown as leaf nodes only
+- AI visualisation quality varies by function type — spatial and algorithmic functions visualise best
 
 ---
 
@@ -98,7 +112,8 @@ The analyser is written in Python (`analyser.py`) and called by the VS Code exte
 |-------|-----------|
 | Editor integration | VS Code Extension API (TypeScript) |
 | Code parsing | Tree-sitter (Python) |
-| Graph rendering | Cytoscape.js (HTML + JavaScript) |
+| Dependency graph rendering | Cytoscape.js (HTML + JavaScript) |
+| AI visualisation | Claude API |
 | Glue layer | TypeScript calls Python as a subprocess |
 
 ---
@@ -109,6 +124,7 @@ The analyser is written in Python (`analyser.py`) and called by the VS Code exte
 CodeFlow/
 ├── src/
 │   ├── extension.ts      # VS Code entry point, command registration
+│   ├── visualiser.ts     # Builds AI prompt, calls Claude API, injects HTML
 │   └── webview.html      # Cytoscape graph renderer
 ├── analyser.py           # Tree-sitter parsing, dependency map builder
 ├── requirements.txt      # Python dependencies (tree-sitter)
