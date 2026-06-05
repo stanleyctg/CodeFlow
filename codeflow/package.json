@@ -15,23 +15,14 @@
   "contributes": {
     "commands": [
       {
-        "command": "codeflow.displayWelcomeMessage",
-        "title": "Display Welcome Message"
-      },
-      {
-        "command": "codeflow.displayCurrentTime",
-        "title": "Display Current Time"
+        "command": "codeflow.generateDependencyGraph",
+        "title": "Generate Dependency Graph"
       }
     ],
     "keybindings": [
       {
-        "command": "codeflow.displayWelcomeMessage",
-        "key": "cmd+shift+w",
-        "when": "editorTextFocus"
-      },
-      {
-        "command": "codeflow.displayCurrentTime",
-        "key": "cmd+shift+t",
+        "command": "codeflow.generateDependencyGraph",
+        "key": "cmd+shift+g",
         "when": "editorTextFocus"
       }
     ]
