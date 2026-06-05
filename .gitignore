@@ -1,0 +1,9 @@
+# ignore .vscode folder
+.vscode/
+
+# ignore node_modules folder
+codeflow/node_modules/
+
+# ignore output folder
+codeflow/out/
+
