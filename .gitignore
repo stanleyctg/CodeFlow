@@ -7,3 +7,5 @@ codeflow/node_modules/
 # ignore output folder
 codeflow/out/
 
+# ignore test output
+codeflow/.vscode-test/

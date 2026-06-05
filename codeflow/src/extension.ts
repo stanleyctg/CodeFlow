@@ -1,6 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { getSelectedText } from './utils';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -10,23 +11,15 @@ export function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "codeflow" is now active!');
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('codeflow.displayWelcomeMessage', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Welcome to CodeFlow!');
+	const generateGraphDisposable = vscode.commands.registerCommand('codeflow.generateDependencyGraph', () => {
+		const editor = vscode.window.activeTextEditor;
+		const selection = getSelectedText(editor!);
+
+		selection ? vscode.window.showInformationMessage('Selected text: ' + selection)
+		: vscode.window.showErrorMessage('No text selected');
 	});
 
-	context.subscriptions.push(disposable);
-
-	const timeDisposable = vscode.commands.registerCommand('codeflow.displayCurrentTime', () => {
-		const currentTime = new Date().toLocaleTimeString();
-		vscode.window.showErrorMessage(`Current Time: ${currentTime}`);
-	});
-	
-	context.subscriptions.push(timeDisposable);
+	context.subscriptions.push(generateGraphDisposable);
 }
 
 // This method is called when your extension is deactivated
