@@ -1,9 +1,9 @@
-name: Test
+name: Tests
 
 on: [push, pull_request]
 
 jobs:
-  Build-and-Test:
+  tests:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
