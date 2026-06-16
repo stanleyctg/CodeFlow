@@ -1,7 +1,4 @@
 import * as assert from 'assert';
-
-// You can import and use all API from the 'vscode' module
-// as well as import your extension to test it
 import * as vscode from 'vscode';
 import * as myUtils from '..//utils';
 
@@ -20,7 +17,7 @@ suite('Utils Test Suite', () => {
 
         // Check the information message
         assert.strictEqual(result, 'process()');
-    })
+    });
 
     test('returns empty string when no text is highlighted', async() => {
         const document = await vscode.workspace.openTextDocument(
@@ -32,7 +29,7 @@ suite('Utils Test Suite', () => {
         const result = myUtils.getSelectedText(editor);
 
         assert.strictEqual(result, '');
-    })
+    });
 
     test('returns single character when single character is highlighted', async() => {
         const document = await vscode.workspace.openTextDocument(
@@ -44,6 +41,6 @@ suite('Utils Test Suite', () => {
         const result = myUtils.getSelectedText(editor);
 
         assert.strictEqual(result, 'p');
-    })
+    });
 });
 
