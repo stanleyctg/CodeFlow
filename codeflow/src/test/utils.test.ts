@@ -6,12 +6,9 @@ import * as vscode from 'vscode';
 import * as myUtils from '..//utils';
 
 suite('Utils Test Suite', () => {
-    vscode.window.showInformationMessage('Start all tests.');
+    vscode.window.showInformationMessage('Start Utils tests.');
 
-    // test for first feature: display selected text in information message
-    // 1. When command is ran with highlighted text, it should show the highlighted text in the information message
     test('returns selected text when text is highlighted', async() => {
-        // Simulate the command being run with highlighted text
         const document = await vscode.workspace.openTextDocument(
             {content: 'function process()'}
         );
@@ -24,7 +21,7 @@ suite('Utils Test Suite', () => {
         // Check the information message
         assert.strictEqual(result, 'process()');
     })
-    // 2. When command is ran without highlighted text, it should show '' in the information message
+
     test('returns empty string when no text is highlighted', async() => {
         const document = await vscode.workspace.openTextDocument(
             {content: 'function process()'}
@@ -36,7 +33,7 @@ suite('Utils Test Suite', () => {
 
         assert.strictEqual(result, '');
     })
-    // 3. When command is ran with single highlighted character, it should show "{char}" in the information message
+
     test('returns single character when single character is highlighted', async() => {
         const document = await vscode.workspace.openTextDocument(
             {content: 'function process()'}
