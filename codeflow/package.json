@@ -21,12 +21,21 @@
       {
         "command": "codeflow.generateDependencyGraph",
         "title": "Generate Dependency Graph"
+      },
+      {
+        "command": "codeflow.extractFiles",
+        "title": "Extract Files from Workspace"
       }
     ],
     "keybindings": [
       {
         "command": "codeflow.generateDependencyGraph",
         "key": "cmd+shift+g",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "codeflow.extractFiles",
+        "key": "cmd+shift+e",
         "when": "editorTextFocus"
       }
     ]
@@ -41,13 +50,17 @@
     "deploy": "vsce publish"
   },
   "devDependencies": {
-    "@types/vscode": "^1.120.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
-    "typescript-eslint": "^8.56.1",
+    "@types/vscode": "^1.120.0",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
     "eslint": "^9.39.3",
     "typescript": "^5.9.3",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2"
+    "typescript-eslint": "^8.56.1"
+  },
+  "dependencies": {
+    "tree-sitter": "^0.25.0",
+    "tree-sitter-python": "^0.25.0"
   }
 }
