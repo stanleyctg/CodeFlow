@@ -26,7 +26,6 @@ export function extractFunctionsFromFiles(files: string[]): FunctionInfo[] {
             }): null;
         }
     }
-    console.log(`Extracted functions: ${functions}`);
     return functions;
 }
 
