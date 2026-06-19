@@ -23,8 +23,8 @@
         "title": "Generate Dependency Graph"
       },
       {
-        "command": "codeflow.extractFiles",
-        "title": "Extract Files from Workspace"
+        "command": "codeflow.extractFunctions",
+        "title": "Extract Functions from Workspace"
       }
     ],
     "keybindings": [
@@ -34,7 +34,7 @@
         "when": "editorTextFocus"
       },
       {
-        "command": "codeflow.extractFiles",
+        "command": "codeflow.extractFunctions",
         "key": "cmd+shift+e",
         "when": "editorTextFocus"
       }
@@ -42,7 +42,8 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
+    "copy-fixtures": "cp -r src/test/fixtures out/test/",
+    "compile": "tsc -p ./ && npm run copy-fixtures",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
