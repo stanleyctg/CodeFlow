@@ -71,7 +71,7 @@ suite('File Extraction Test Suite', () => {
 suite('Function Extraction Test Suite', () => {
     vscode.window.showInformationMessage('Start Extraction tests.');
 
-    test.skip('extracts all functions from a file', async() => {
+    test('extracts all functions from a file', async() => {
         const files = [fixturesPath('test_extract_file_1.py')];
         const result = await extractFunctionsFromFiles(files);
         assert.strictEqual(result.length, 1);
@@ -80,13 +80,13 @@ suite('Function Extraction Test Suite', () => {
         ]);
     });
 
-    test.skip('returns empty array when no functions found', async() => {
+    test('returns empty array when no functions found', async() => {
         const files = [fixturesPath('test_extract_empty_file.py')];
         const result = await extractFunctionsFromFiles(files);
         assert.strictEqual(result.length, 0);
     });
 
-    test.skip('extracts functions from multiple files', async() => {
+    test('extracts functions from multiple files', async() => {
         const files = [fixturesPath('test_extract_file_1.py'), fixturesPath('test_extract_file_2.py')];
         const result = await extractFunctionsFromFiles(files);
         assert.strictEqual(result.length, 5);
