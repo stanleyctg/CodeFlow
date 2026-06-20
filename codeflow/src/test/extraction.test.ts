@@ -140,5 +140,9 @@ suite('Function Callees Mapping Test Suite', () => {
 
     // test 3: All callees are extracted from the same class
 
-    // test
+    // test 4: All callees are extracted from different class
+
+    // test 5: All functions dont have callees
+
+    // test 6: Callee function cant be resolved from functions are excluded from results
 });
