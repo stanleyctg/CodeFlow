@@ -98,4 +98,15 @@ suite('Function Extraction Test Suite', () => {
             { name: 'divide', file: fixturesPath('test_extract_file_2.py'), class: 'Calculator' }
         ]);
     });
+
+    test('extracts functions from files with no classes', async() => {
+        const files = [fixturesPath('test_extract_file_3.py')];
+        const result = await extractFunctionsFromFiles(files);
+        assert.strictEqual(result.length, 3);
+        assert.deepStrictEqual(result, [
+            { name: 'meow', file: fixturesPath('test_extract_file_3.py'), class: undefined },
+            { name: 'purr', file: fixturesPath('test_extract_file_3.py'), class: undefined },
+            { name: 'hiss', file: fixturesPath('test_extract_file_3.py'), class: undefined }
+        ])
+    })
 });
