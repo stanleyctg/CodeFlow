@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import { FunctionInfo } from './types';
+import { FunctionInfo, FunctionCalleesMap } from './types';
 
 import Parser from 'tree-sitter';
 import Python from 'tree-sitter-python';
@@ -33,6 +33,13 @@ export function extractFunctionsFromFiles(files: string[]): FunctionInfo[] {
 export async function extractFilesFromWorkspace(findFiles: (pattern: string) => Thenable<vscode.Uri[]>): Promise<string[]> {
     const uris = await findFiles('**/*.py');
     return uris.map(uri => uri.fsPath);
+}
+
+export function mapCalleesToFunction(files: string[], functions: FunctionInfo[]): FunctionCalleesMap[] {
+    return [{
+        function: {name: 'ignore', file: 'ignore', class: 'ignore'},
+        callees: []
+    }]
 }
 
 // helper functions

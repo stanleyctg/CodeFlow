@@ -3,3 +3,8 @@ export interface FunctionInfo {
     file: string
     class?: string
 }
+
+export interface FunctionCalleesMap {
+    function: FunctionInfo
+    callees?: FunctionInfo[]
+}
