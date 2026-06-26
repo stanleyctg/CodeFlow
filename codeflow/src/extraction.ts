@@ -16,7 +16,7 @@ export function extractFunctionsFromFiles(files: string[]): FunctionInfo[] {
         const query = new Parser.Query(
             parser.getLanguage(),
             `(function_definition name: (identifier) @function.name)`
-        )
+        );
         const functionNodes = query.matches(tree.rootNode);
         for (const functionNode of functionNodes) {
             (functionNode.captures[0].node.text !== '__init__')?functions.push({
@@ -39,7 +39,7 @@ export function mapCalleesToFunction(files: string[], functions: FunctionInfo[])
     return [{
         function: {name: 'ignore', file: 'ignore', class: 'ignore'},
         callees: []
-    }]
+    }];
 }
 
 // helper functions

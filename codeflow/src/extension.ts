@@ -22,13 +22,13 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(generateGraphDisposable);
 	
-	const extractFilesDisposable = vscode.commands.registerCommand('codeflow.extractFunctions', async () => {
+	const extractFunctionsDisposable = vscode.commands.registerCommand('codeflow.extractFunctions', async () => {
 		const files = await extractFilesFromWorkspace(vscode.workspace.findFiles);
 		const functions = extractFunctionsFromFiles(files);
 		vscode.window.showInformationMessage(`Functions found: ${JSON.stringify(functions)}`);
 	});
 
-	context.subscriptions.push(extractFilesDisposable);
+	context.subscriptions.push(extractFunctionsDisposable);
 
 }
 
