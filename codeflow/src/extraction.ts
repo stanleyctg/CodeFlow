@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import { FunctionInfo, FunctionCalleesMap } from './types';
+import { FunctionInfo, FunctionCalleesMap, FunctionDependencyGraph } from './types';
 
 import Parser from 'tree-sitter';
 import Python from 'tree-sitter-python';
@@ -65,6 +65,16 @@ export function mapCalleesToFunction(files: string[], functions: FunctionInfo[])
         }
     }
     return functionCalleesMap;
+}
+
+export function buildFunctionDependencyGraph(functionCalleesMap: FunctionCalleesMap[] | undefined): FunctionDependencyGraph[] {
+    return [
+        {
+            function: {name: 'ignore', file: 'ignore.py', class: 'ignore'},
+            callers: [],
+            callees: []
+        }
+    ]
 }
 
 // helper functions
