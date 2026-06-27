@@ -128,11 +128,11 @@ suite('Function Callees Mapping Test Suite', () => {
         assert.strictEqual(result.length, 2);
         assert.deepStrictEqual(result, [
             { 
-                name: makeFunctionInfo('meow', fixturesPath('test_map_callees/test_map_function_1.py'), 'Cat'),
+                function: makeFunctionInfo('meow', fixturesPath('test_map_callees/test_map_function_1.py'), 'Cat'),
                 callees: [makeFunctionInfo('cat_sound', fixturesPath('test_map_callees/test_map_function_1.py'), undefined)]
             },
             { 
-                name: makeFunctionInfo('cat_sound', fixturesPath('test_map_callees/test_map_function_1.py'), undefined),
+                function: makeFunctionInfo('cat_sound', fixturesPath('test_map_callees/test_map_function_1.py'), undefined),
                 callees: []
             }
         ]);
@@ -150,11 +150,11 @@ suite('Function Callees Mapping Test Suite', () => {
        assert.strictEqual(result.length, 2);
        assert.deepStrictEqual(result, [
             { 
-                name:  makeFunctionInfo('say_meow', fixturesPath('test_map_callees/test_map_function_2.py'), 'Meow'),
+                function:  makeFunctionInfo('say_meow', fixturesPath('test_map_callees/test_map_function_2.py'), 'Meow'),
                 callees: [makeFunctionInfo('meow', fixturesPath('test_map_callees/test_map_function_1.py'), 'Cat')]
             },
             { 
-                name: makeFunctionInfo('say_woof', fixturesPath('test_map_callees/test_map_function_2.py'), undefined),
+                function: makeFunctionInfo('say_woof', fixturesPath('test_map_callees/test_map_function_2.py'), undefined),
                 callees: []
             }
        ]);
@@ -172,19 +172,19 @@ suite('Function Callees Mapping Test Suite', () => {
         assert.strictEqual(result.length, 4);
         assert.deepStrictEqual(result, [
             {   
-                name: makeFunctionInfo('process_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order'),
+                function: makeFunctionInfo('process_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order'),
                 callees: [makeFunctionInfo('validate_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order')]
             },
             {
-                name: makeFunctionInfo('complete_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order'),
+                function: makeFunctionInfo('complete_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order'),
                 callees: [makeFunctionInfo('save_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order')]
             },
             {
-                name: makeFunctionInfo('save_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order'),
+                function: makeFunctionInfo('save_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order'),
                 callees: []
             },
             {
-                name: makeFunctionInfo('validate_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order'),
+                function: makeFunctionInfo('validate_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order'),
                 callees: []
             }
         ]);
@@ -199,7 +199,7 @@ suite('Function Callees Mapping Test Suite', () => {
         assert.strictEqual(result.length, 1);
         assert.deepStrictEqual(result, [
             {
-                name:  makeFunctionInfo('call_print', fixturesPath('test_map_callees/test_map_function_4.py'), 'CallOtherLibrary'),
+                function:  makeFunctionInfo('call_print', fixturesPath('test_map_callees/test_map_function_4.py'), 'CallOtherLibrary'),
                 callees: []
             }
         ]);
@@ -222,35 +222,35 @@ suite('Function Callees Mapping Test Suite', () => {
         assert.strictEqual(result.length, 8);
         assert.deepStrictEqual(result, [
             { 
-                name: makeFunctionInfo('meow', fixturesPath('test_map_callees/test_map_function_1.py'), 'Cat'),
+                function: makeFunctionInfo('meow', fixturesPath('test_map_callees/test_map_function_1.py'), 'Cat'),
                 callees: [makeFunctionInfo('cat_sound', fixturesPath('test_map_callees/test_map_function_1.py'), undefined)]
             },
             { 
-                name: makeFunctionInfo('cat_sound', fixturesPath('test_map_callees/test_map_function_1.py'), undefined),
+                function: makeFunctionInfo('cat_sound', fixturesPath('test_map_callees/test_map_function_1.py'), undefined),
                 callees: []
             },
             { 
-                name:  makeFunctionInfo('say_meow', fixturesPath('test_map_callees/test_map_function_2.py'), 'Meow'),
+                function:  makeFunctionInfo('say_meow', fixturesPath('test_map_callees/test_map_function_2.py'), 'Meow'),
                 callees: [makeFunctionInfo('meow', fixturesPath('test_map_callees/test_map_function_1.py'), 'Cat')]
             },
             { 
-                name: makeFunctionInfo('say_woof', fixturesPath('test_map_callees/test_map_function_2.py'), undefined),
+                function: makeFunctionInfo('say_woof', fixturesPath('test_map_callees/test_map_function_2.py'), undefined),
                 callees: []
             },
             {   
-                name: makeFunctionInfo('process_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order'),
+                function: makeFunctionInfo('process_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order'),
                 callees: [makeFunctionInfo('validate_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order')]
             },
             {
-                name: makeFunctionInfo('complete_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order'),
+                function: makeFunctionInfo('complete_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order'),
                 callees: [makeFunctionInfo('save_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order')]
             },
             {
-                name: makeFunctionInfo('save_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order'),
+                function: makeFunctionInfo('save_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order'),
                 callees: []
             },
             {
-                name: makeFunctionInfo('validate_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order'),
+                function: makeFunctionInfo('validate_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order'),
                 callees: []
             }
         ]);
