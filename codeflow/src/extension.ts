@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { getSelectedText } from './utils';
-import { extractFilesFromWorkspace, extractFunctionsFromFiles } from './extraction';
+import { extractFilesFromWorkspace, extractFunctionsFromFiles, mapCalleesToFunction } from './extraction';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -22,13 +22,14 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(generateGraphDisposable);
 	
-	const extractFilesDisposable = vscode.commands.registerCommand('codeflow.extractFunctions', async () => {
+	const extractFunctionsDisposable = vscode.commands.registerCommand('codeflow.extractFunctions', async () => {
 		const files = await extractFilesFromWorkspace(vscode.workspace.findFiles);
 		const functions = extractFunctionsFromFiles(files);
-		vscode.window.showInformationMessage(`Functions found: ${JSON.stringify(functions)}`);
+		const functionCalleeMap = mapCalleesToFunction(files, functions);
+		vscode.window.showInformationMessage(`Function Map found: ${JSON.stringify(functionCalleeMap)}`);
 	});
 
-	context.subscriptions.push(extractFilesDisposable);
+	context.subscriptions.push(extractFunctionsDisposable);
 
 }
 
