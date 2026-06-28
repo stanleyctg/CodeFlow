@@ -67,14 +67,20 @@ export function mapCalleesToFunction(files: string[], functions: FunctionInfo[])
     return functionCalleesMap;
 }
 
-export function buildFunctionDependencyGraph(functionCalleesMap: FunctionCalleesMap[] | undefined): FunctionDependencyGraph[] {
-    return [
-        {
-            function: {name: 'ignore', file: 'ignore.py', class: 'ignore'},
-            callers: [],
-            callees: []
-        }
-    ]
+export function buildFunctionDependencyGraph(functionCalleesMap: FunctionCalleesMap[] = []): FunctionDependencyGraph[] {
+    const functionDependencyGraph: FunctionDependencyGraph[] = functionCalleesMap.map(f => ({
+        function: f.function,
+        callers: [],
+        callees: f.callees
+    }));
+
+    for (const functionCalleeMap of functionCalleesMap) {
+        const functions = functionCalleeMap.callees;
+        const caller = functionCalleeMap.function;
+        addCallerToEachFunction(functions, caller, functionDependencyGraph);
+    }
+
+    return functionDependencyGraph;
 }
 
 // helper functions
@@ -178,3 +184,16 @@ function extractCalleesFromFunctionNode(functionNode: Parser.SyntaxNode,
         }
         return callees;
 }
+
+function addCallerToEachFunction(functions: FunctionInfo[], 
+    caller: FunctionInfo, 
+    functionDependencyGraph: FunctionDependencyGraph[]
+    ): void {
+        for (const fn of functions) {
+            const functionDependencyGraphNode = functionDependencyGraph.find(f => f.function.name === fn.name &&
+                f.function.file === fn.file &&
+                f.function.class === fn.class
+            );
+            functionDependencyGraphNode?.callers.push(caller);
+        }
+    }

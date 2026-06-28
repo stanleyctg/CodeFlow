@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { getSelectedText } from './utils';
-import { extractFilesFromWorkspace, extractFunctionsFromFiles, mapCalleesToFunction } from './extraction';
+import { extractFilesFromWorkspace, extractFunctionsFromFiles, mapCalleesToFunction, buildFunctionDependencyGraph } from './extraction';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -26,7 +26,8 @@ export function activate(context: vscode.ExtensionContext) {
 		const files = await extractFilesFromWorkspace(vscode.workspace.findFiles);
 		const functions = extractFunctionsFromFiles(files);
 		const functionCalleeMap = mapCalleesToFunction(files, functions);
-		vscode.window.showInformationMessage(`Function Map found: ${JSON.stringify(functionCalleeMap)}`);
+		const functionDependencyGraph = buildFunctionDependencyGraph(functionCalleeMap);
+		vscode.window.showInformationMessage(`Function Map found: ${JSON.stringify(functionDependencyGraph)}`);
 	});
 
 	context.subscriptions.push(extractFunctionsDisposable);

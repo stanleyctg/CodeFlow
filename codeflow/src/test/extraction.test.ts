@@ -270,11 +270,19 @@ suite('Build Function Dependency Graph Test Suite', () => {
         {
             function: makeFunctionInfo('buy_product', 'product.py', 'Product'),
             callees: [makeFunctionInfo('process_order', 'something.py', 'Order')]
+        },
+        {
+            function: makeFunctionInfo('save_order', 'something.py', 'Order'),
+            callees: []
+        },
+        {
+            function: makeFunctionInfo('check_payment', 'something.py', 'Order'),
+            callees: []
         }
     ];
 
         const result = buildFunctionDependencyGraph(functionCalleesMap);
-        assert.strictEqual(result.length, 2);
+        assert.strictEqual(result.length, 4);
         assert.deepStrictEqual(result, [
             {
                 function: makeFunctionInfo('process_order', 'something.py', 'Order'),
@@ -285,6 +293,16 @@ suite('Build Function Dependency Graph Test Suite', () => {
                 function: makeFunctionInfo('buy_product', 'product.py', 'Product'),
                 callers: [],
                 callees: [makeFunctionInfo('process_order', 'something.py', 'Order')]
+            },
+            {
+                function: makeFunctionInfo('save_order', 'something.py', 'Order'),
+                callers: [makeFunctionInfo('process_order', 'something.py', 'Order')],
+                callees: []
+            },
+            {
+                function: makeFunctionInfo('check_payment', 'something.py', 'Order'),
+                callers: [makeFunctionInfo('process_order', 'something.py', 'Order')],
+                callees: []
             }
         ]);
     });
@@ -303,11 +321,23 @@ suite('Build Function Dependency Graph Test Suite', () => {
         {
             function: makeFunctionInfo('nay', 'Horse.py', 'Horse'),
             callees: [makeFunctionInfo('nay-hay', 'Horse.py', 'Horse')]
+        },
+        {
+            function: makeFunctionInfo('purr', 'Cat.py', 'Cat'),
+            callees: []
+        },
+        {
+            function: makeFunctionInfo('bark', 'Dog.py', 'Dog'),
+            callees: []
+        },
+        {
+            function: makeFunctionInfo('nay-hay', 'Horse.py', 'Horse'),
+            callees: []
         }
     ];
 
         const result = buildFunctionDependencyGraph(functionCalleesMap);
-        assert.strictEqual(result.length, 3);
+        assert.strictEqual(result.length, 6);
         assert.deepStrictEqual(result, [
             {
                 function: makeFunctionInfo('meow', 'Cat.py', 'Cat'),
@@ -323,6 +353,21 @@ suite('Build Function Dependency Graph Test Suite', () => {
                 function: makeFunctionInfo('nay', 'Horse.py', 'Horse'),
                 callers: [],
                 callees: [makeFunctionInfo('nay-hay', 'Horse.py', 'Horse')]
+            },
+            {
+                function: makeFunctionInfo('purr', 'Cat.py', 'Cat'),
+                callers: [ makeFunctionInfo('meow', 'Cat.py', 'Cat')],
+                callees: []
+            },
+            {
+                function: makeFunctionInfo('bark', 'Dog.py', 'Dog'),
+                callers: [makeFunctionInfo('woof', 'Dog.py', 'Dog')],
+                callees: [],
+            },
+            {
+                function: makeFunctionInfo('nay-hay', 'Horse.py', 'Horse'),
+                callers: [makeFunctionInfo('nay', 'Horse.py', 'Horse')],
+                callees: []
             }
         ]);
     });
