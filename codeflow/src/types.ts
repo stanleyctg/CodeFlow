@@ -6,5 +6,11 @@ export interface FunctionInfo {
 
 export interface FunctionCalleesMap {
     function: FunctionInfo
-    callees?: FunctionInfo[]
+    callees: FunctionInfo[]
+}
+
+export interface FunctionDependencyGraph {
+    function: FunctionInfo
+    callers: FunctionInfo[]
+    callees: FunctionInfo[] 
 }

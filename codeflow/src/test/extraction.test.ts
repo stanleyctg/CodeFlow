@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 
 import { FunctionInfo } from '../types';
-import { extractFunctionsFromFiles, extractFilesFromWorkspace, mapCalleesToFunction } from '../extraction';
+import { extractFunctionsFromFiles, extractFilesFromWorkspace, mapCalleesToFunction, buildFunctionDependencyGraph } from '../extraction';
 
 function fixturesPath(filename: string): string {
     return path.join(__dirname, 'fixtures', filename);
@@ -19,7 +19,7 @@ function makeFunctionInfo(functionName: string, fileName: string, className?: st
 
 
 suite('File Extraction Test Suite', () => {
-    vscode.window.showInformationMessage('Start Extraction tests.');
+    vscode.window.showInformationMessage('Start File Extraction tests.');
 
     test('extract all files from workspace folder', async() => {
         const findFilesMock = async (pattern: string): Promise<vscode.Uri[]> => {
@@ -74,7 +74,7 @@ suite('File Extraction Test Suite', () => {
 });
 
 suite('Function Extraction Test Suite', () => {
-    vscode.window.showInformationMessage('Start Extraction tests.');
+    vscode.window.showInformationMessage('Start Function Extraction tests.');
 
     test('extracts all functions from a file', async() => {
         const files = [fixturesPath('test_extract_function/test_extract_file_1.py')];
@@ -254,5 +254,178 @@ suite('Function Callees Mapping Test Suite', () => {
                 callees: []
             }
         ]);
+    });
+});
+
+suite('Build Function Dependency Graph Test Suite', () => {
+    vscode.window.showInformationMessage('Start Build Function Dependency Test');
+
+    // test 1: Functions inlclude callers and callees
+    test('Functions have both callers and callees', async() => {
+        const functionCalleesMap = [
+        {
+            function: makeFunctionInfo('process_order', 'something.py', 'Order'),
+            callees: [makeFunctionInfo('save_order', 'something.py', 'Order'), makeFunctionInfo('check_payment', 'something.py', 'Order')]
+        },
+        {
+            function: makeFunctionInfo('buy_product', 'product.py', 'Product'),
+            callees: [makeFunctionInfo('process_order', 'something.py', 'Order')]
+        },
+        {
+            function: makeFunctionInfo('save_order', 'something.py', 'Order'),
+            callees: []
+        },
+        {
+            function: makeFunctionInfo('check_payment', 'something.py', 'Order'),
+            callees: []
+        }
+    ];
+
+        const result = buildFunctionDependencyGraph(functionCalleesMap);
+        assert.strictEqual(result.length, 4);
+        assert.deepStrictEqual(result, [
+            {
+                function: makeFunctionInfo('process_order', 'something.py', 'Order'),
+                callers: [makeFunctionInfo('buy_product', 'product.py', 'Product')],
+                callees: [makeFunctionInfo('save_order', 'something.py', 'Order'), makeFunctionInfo('check_payment', 'something.py', 'Order')]
+            },
+            {
+                function: makeFunctionInfo('buy_product', 'product.py', 'Product'),
+                callers: [],
+                callees: [makeFunctionInfo('process_order', 'something.py', 'Order')]
+            },
+            {
+                function: makeFunctionInfo('save_order', 'something.py', 'Order'),
+                callers: [makeFunctionInfo('process_order', 'something.py', 'Order')],
+                callees: []
+            },
+            {
+                function: makeFunctionInfo('check_payment', 'something.py', 'Order'),
+                callers: [makeFunctionInfo('process_order', 'something.py', 'Order')],
+                callees: []
+            }
+        ]);
+    });
+
+    // test 2: Functions with no callers
+    test('All functions have no callers', async() => {
+        const functionCalleesMap = [
+        {
+            function: makeFunctionInfo('meow', 'Cat.py', 'Cat'),
+            callees: [makeFunctionInfo('purr', 'Cat.py', 'Cat')]
+        },
+        {
+            function: makeFunctionInfo('woof', 'Dog.py', 'Dog'),
+            callees: [makeFunctionInfo('bark', 'Dog.py', 'Dog')]
+        },
+        {
+            function: makeFunctionInfo('nay', 'Horse.py', 'Horse'),
+            callees: [makeFunctionInfo('nay-hay', 'Horse.py', 'Horse')]
+        },
+        {
+            function: makeFunctionInfo('purr', 'Cat.py', 'Cat'),
+            callees: []
+        },
+        {
+            function: makeFunctionInfo('bark', 'Dog.py', 'Dog'),
+            callees: []
+        },
+        {
+            function: makeFunctionInfo('nay-hay', 'Horse.py', 'Horse'),
+            callees: []
+        }
+    ];
+
+        const result = buildFunctionDependencyGraph(functionCalleesMap);
+        assert.strictEqual(result.length, 6);
+        assert.deepStrictEqual(result, [
+            {
+                function: makeFunctionInfo('meow', 'Cat.py', 'Cat'),
+                callers: [],
+                callees: [makeFunctionInfo('purr', 'Cat.py', 'Cat')]
+            },
+            {
+                function: makeFunctionInfo('woof', 'Dog.py', 'Dog'),
+                callers: [],
+                callees: [makeFunctionInfo('bark', 'Dog.py', 'Dog')]
+            },
+            {
+                function: makeFunctionInfo('nay', 'Horse.py', 'Horse'),
+                callers: [],
+                callees: [makeFunctionInfo('nay-hay', 'Horse.py', 'Horse')]
+            },
+            {
+                function: makeFunctionInfo('purr', 'Cat.py', 'Cat'),
+                callers: [ makeFunctionInfo('meow', 'Cat.py', 'Cat')],
+                callees: []
+            },
+            {
+                function: makeFunctionInfo('bark', 'Dog.py', 'Dog'),
+                callers: [makeFunctionInfo('woof', 'Dog.py', 'Dog')],
+                callees: [],
+            },
+            {
+                function: makeFunctionInfo('nay-hay', 'Horse.py', 'Horse'),
+                callers: [makeFunctionInfo('nay', 'Horse.py', 'Horse')],
+                callees: []
+            }
+        ]);
+    });
+
+    // test 3: Functions with no callees and callers
+    test('All functions have no callees and callers', async() => {
+        const functionCalleesMap = [
+            {
+                function: makeFunctionInfo('meow', 'Cat.py', 'Cat'),
+                callees: []
+            },
+            {
+                function: makeFunctionInfo('woof', 'Dog.py', 'Dog'),
+                callees: []
+            },
+            {
+                function:  makeFunctionInfo('nay', 'Horse.py', 'Horse'),
+                callees: []
+            },
+            {
+                function: makeFunctionInfo('buy_product', 'product.py', 'Product'),
+                callees: []
+            }
+        ];
+
+        const result = buildFunctionDependencyGraph(functionCalleesMap);
+        assert.strictEqual(result.length, 4);
+        assert.deepStrictEqual(result, [
+            {
+                function: makeFunctionInfo('meow', 'Cat.py', 'Cat'),
+                callers: [],
+                callees: []
+            },
+            {
+                function: makeFunctionInfo('woof', 'Dog.py', 'Dog'),
+                callers: [],
+                callees: []
+            },
+            {
+                function:  makeFunctionInfo('nay', 'Horse.py', 'Horse'),
+                callers: [],
+                callees: []
+            },
+            {
+                function: makeFunctionInfo('buy_product', 'product.py', 'Product'),
+                callers: [],
+                callees: []
+            }
+        ]);
+
+    });
+
+    // test 4: When the callee dependency is empty should return []
+    test('If callees map is empty, return []', async() => {
+        const functionCalleesMap = undefined;
+        
+        const result = buildFunctionDependencyGraph(functionCalleesMap);
+        assert.strictEqual(result.length, 0);
+        assert.deepStrictEqual(result, []);
     });
 });

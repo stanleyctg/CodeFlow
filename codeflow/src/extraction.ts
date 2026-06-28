@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import { FunctionInfo, FunctionCalleesMap } from './types';
+import { FunctionInfo, FunctionCalleesMap, FunctionDependencyGraph } from './types';
 
 import Parser from 'tree-sitter';
 import Python from 'tree-sitter-python';
@@ -55,16 +55,32 @@ export function mapCalleesToFunction(files: string[], functions: FunctionInfo[])
         for (const functionNode of functionNodes) {
             const fnName = functionNode.childForFieldName('name')?.text;
             const functionResolved = functions.find(f => f.name === fnName && f.file === file);
-            if (!functionResolved) continue;
+            if (!functionResolved) {continue};
             const callees = extractCalleesFromFunctionNode(functionNode, calleeQuery, functions, aliasMap, varTypeMap, file);
            
             functionCalleesMap.push({
                 function: functionResolved,
                 callees: callees
-            })
+            });
         }
     }
     return functionCalleesMap;
+}
+
+export function buildFunctionDependencyGraph(functionCalleesMap: FunctionCalleesMap[] = []): FunctionDependencyGraph[] {
+    const functionDependencyGraph: FunctionDependencyGraph[] = functionCalleesMap.map(f => ({
+        function: f.function,
+        callers: [],
+        callees: f.callees
+    }));
+
+    for (const functionCalleeMap of functionCalleesMap) {
+        const functions = functionCalleeMap.callees;
+        const caller = functionCalleeMap.function;
+        addCallerToEachFunction(functions, caller, functionDependencyGraph);
+    }
+
+    return functionDependencyGraph;
 }
 
 // helper functions
@@ -82,7 +98,7 @@ function getClassName(node: Parser.SyntaxNode): string | undefined {
 function createTreeFromSourceFile(file: string): Parser.Tree {
     const code = fs.readFileSync(file, 'utf-8');
     const tree = parser.parse(code);
-    return tree
+    return tree;
 }
 
 function createAliasMap(tree: Parser.Tree): Record<string, string> {
@@ -96,8 +112,8 @@ function createAliasMap(tree: Parser.Tree): Record<string, string> {
     );
     const aliasMatches = aliasQuery.matches(tree.rootNode);
     for (const match of aliasMatches) {
-        const import_name = match.captures.find(c => c.name == 'import.name')?.node.text;
-        const alias = match.captures.find(c => c.name == 'import.alias')?.node.text;
+        const import_name = match.captures.find(c => c.name === 'import.name')?.node.text;
+        const alias = match.captures.find(c => c.name === 'import.alias')?.node.text;
         if (import_name && alias) {
             aliasMap[alias] = import_name;
         }
@@ -131,14 +147,14 @@ function resolveCallee(calleeMatch: Parser.QueryMatch,
     aliasMap: Record<string, string>,
     file: string
     ): FunctionInfo | undefined {
-        const obj = calleeMatch.captures.find(c => c.name == 'callee.object')?.node.text;
-        const method = calleeMatch.captures.find(c => c.name == 'callee.method')?.node.text;
-        const directName = calleeMatch.captures.find(c => c.name == 'callee.name')?.node.text;
+        const obj = calleeMatch.captures.find(c => c.name === 'callee.object')?.node.text;
+        const method = calleeMatch.captures.find(c => c.name === 'callee.method')?.node.text;
+        const directName = calleeMatch.captures.find(c => c.name === 'callee.name')?.node.text;
 
-        let resolvedClass: string | undefined
+        let resolvedClass: string | undefined;
 
         if (obj && method) {
-            if (obj == 'self') {
+            if (obj === 'self') {
                 resolvedClass = getClassName(calleeMatch.captures[0].node);
             }
             else {
@@ -146,10 +162,10 @@ function resolveCallee(calleeMatch: Parser.QueryMatch,
                 resolvedClass = aliasMap[varType] ?? varType;
             }
             const callee = functions.find(f => f.name === method && f.class === resolvedClass);
-            return callee
+            return callee;
         } else if (directName) {
             const callee = functions.find(f => f.name === directName && f.file === file) ?? functions.find(f => f.name === directName);
-            return callee
+            return callee;
         }
 }
 
@@ -164,7 +180,20 @@ function extractCalleesFromFunctionNode(functionNode: Parser.SyntaxNode,
         const calleeMatches = calleeQuery.matches(functionNode);
         for (const calleeMatch of calleeMatches) {
             const callee = resolveCallee(calleeMatch, functions, aliasMap, varTypeMap, file);
-            if (callee && !callees.includes(callee)) callees.push(callee);
+            if (callee && !callees.includes(callee)) {callees.push(callee)};
         }
-        return callees
+        return callees;
 }
+
+function addCallerToEachFunction(functions: FunctionInfo[], 
+    caller: FunctionInfo, 
+    functionDependencyGraph: FunctionDependencyGraph[]
+    ): void {
+        for (const fn of functions) {
+            const functionDependencyGraphNode = functionDependencyGraph.find(f => f.function.name === fn.name &&
+                f.function.file === fn.file &&
+                f.function.class === fn.class
+            );
+            functionDependencyGraphNode?.callers.push(caller);
+        }
+    }
