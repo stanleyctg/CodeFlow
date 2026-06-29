@@ -1,8 +1,12 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { getSelectedText } from './utils';
-import { extractFilesFromWorkspace, extractFunctionsFromFiles, mapCalleesToFunction, buildFunctionDependencyGraph } from './extraction';
+import { getSelectedText, 
+	extractFilesFromWorkspace, 
+	extractFunctionsFromFiles, 
+	mapCalleesToFunction, 
+	buildFunctionDependencyGraph, 
+	mapSelectedTextToFunctionGraph } from './extraction';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -27,7 +31,12 @@ export function activate(context: vscode.ExtensionContext) {
 		const functions = extractFunctionsFromFiles(files);
 		const functionCalleeMap = mapCalleesToFunction(files, functions);
 		const functionDependencyGraph = buildFunctionDependencyGraph(functionCalleeMap);
-		vscode.window.showInformationMessage(`Function Map found: ${JSON.stringify(functionDependencyGraph)}`);
+		const editor = vscode.window.activeTextEditor;
+		const selectedText = getSelectedText(editor!);
+		const functionNodeView = mapSelectedTextToFunctionGraph(selectedText, functionDependencyGraph)
+		functionNodeView ? 
+		vscode.window.showInformationMessage(`Function Map found: ${JSON.stringify(functionNodeView)}`) : 
+		vscode.window.showErrorMessage('Text selected is not a function');
 	});
 
 	context.subscriptions.push(extractFunctionsDisposable);
