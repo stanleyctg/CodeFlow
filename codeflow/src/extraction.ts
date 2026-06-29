@@ -8,6 +8,11 @@ import Python from 'tree-sitter-python';
 const parser = new Parser();
 parser.setLanguage(Python as unknown as Parser.Language);
 
+export function getSelectedText(editor: vscode.TextEditor): string {
+    const selection = editor.document.getText(editor.selection);
+    return selection ? selection : '';
+}
+
 export function extractFunctionsFromFiles(files: string[]): FunctionInfo[] {
     const functions: FunctionInfo[] = [];
     for (const file of files) {
@@ -81,6 +86,11 @@ export function buildFunctionDependencyGraph(functionCalleesMap: FunctionCallees
     }
 
     return functionDependencyGraph;
+}
+
+export function mapSelectedTextToFunctionGraph(selectedText: string, functionDependencyGraph: FunctionDependencyGraph[]): FunctionDependencyGraph | undefined {
+    const functionNode = functionDependencyGraph.find(f => f.function.name === selectedText) || undefined;
+    return functionNode;
 }
 
 // helper functions
