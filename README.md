@@ -46,12 +46,6 @@ cd CodeFlow/codeflow
 npm install
 npm run compile
 ```
-
-Then in VS Code:
-- Open the command palette (`Cmd+Shift+P`)
-- Run `Extensions: Install from VSIX`
-- Select the generated `.vsix` file
-
 ---
 
 ## Usage
@@ -77,18 +71,6 @@ Cmd+Shift+P → CodeFlow: Show Dependencies
 | Dependency graph rendering | Cytoscape.js |
 | AI visualisation | Claude API |
 
----
-
-## Project structure
-CodeFlow/
-├── codeflow/
-│   ├── src/
-│   │   ├── extension.ts      # VS Code entry point, command registration
-│   │   └── utils.ts          # Helper functions
-│   ├── package.json
-│   └── tsconfig.json
-└── README.md
----
 
 ## Contributing
 
