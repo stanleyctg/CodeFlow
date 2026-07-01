@@ -13,10 +13,10 @@ export function getSelectedText(editor: vscode.TextEditor): string {
     return selection ? selection : '';
 }
 
-export function extractFunctionsFromFiles(files: string[]): FunctionInfo[] {
+export async function extractFunctionsFromFiles(files: string[]): Promise<FunctionInfo[]> {
     const functions: FunctionInfo[] = [];
     for (const file of files) {
-        const tree = createTreeFromSourceFile(file);
+        const tree = await createTreeFromSourceFile(file);
         const query = new Parser.Query(
             parser.getLanguage(),
             `(function_definition name: (identifier) @function.name)`
@@ -34,17 +34,17 @@ export function extractFunctionsFromFiles(files: string[]): FunctionInfo[] {
 }
 
 // Dep inject with vscode.workspace.findFiles to make it easier to test
-export async function extractFilesFromWorkspace(findFiles: (pattern: string) => Thenable<vscode.Uri[]>): Promise<string[]> {
-    const uris = await findFiles('**/*.py');
+export async function extractFilesFromWorkspace(findFiles: (include: string, exclude?: string) => Thenable<vscode.Uri[]>): Promise<string[]> {
+    const uris = await findFiles('**/*.py', '**/{.venv,venv,env,node_modules,__pycache__,.git,.pytest_cache,.mypy_cache}/**');
+    console.log(`[CodeFlow] File scan: ${uris.length} Python files found (virtual environments and caches excluded)`);
     return uris.map(uri => uri.fsPath);
 }
 
-export function mapCalleesToFunction(files: string[], functions: FunctionInfo[]): FunctionCalleesMap[] {
-    const functionCalleesMap: FunctionCalleesMap[] = []; 
+export async function mapCalleesToFunction(files: string[], functions: FunctionInfo[]): Promise<FunctionCalleesMap[]> {
+    const functionCalleesMap: FunctionCalleesMap[] = [];
     for (const file of files) {
-        const tree = createTreeFromSourceFile(file);
+        const tree = await createTreeFromSourceFile(file);
         const aliasMap: Record<string, string> = createAliasMap(tree);
-        const varTypeMap: Record<string, string> = createVarTypeMap(tree);
 
         const calleeQuery = new Parser.Query(
             parser.getLanguage(),
@@ -52,7 +52,7 @@ export function mapCalleesToFunction(files: string[], functions: FunctionInfo[])
                 function: (attribute
                     object: (identifier) @callee.object
                     attribute: (identifier) @callee.method))
-            
+
             (call
                 function: (identifier) @callee.name)`
         );
@@ -61,6 +61,7 @@ export function mapCalleesToFunction(files: string[], functions: FunctionInfo[])
             const fnName = functionNode.childForFieldName('name')?.text;
             const functionResolved = functions.find(f => f.name === fnName && f.file === file);
             if (!functionResolved) {continue};
+            const varTypeMap: Record<string, string> = createVarTypeMap(functionNode);
             const callees = extractCalleesFromFunctionNode(functionNode, calleeQuery, functions, aliasMap, varTypeMap, file);
            
             functionCalleesMap.push({
@@ -72,7 +73,7 @@ export function mapCalleesToFunction(files: string[], functions: FunctionInfo[])
     return functionCalleesMap;
 }
 
-export function buildFunctionDependencyGraph(functionCalleesMap: FunctionCalleesMap[] = []): FunctionDependencyGraph[] {
+export async function buildFunctionDependencyGraph(functionCalleesMap: FunctionCalleesMap[] = []): Promise<FunctionDependencyGraph[]> {
     const functionDependencyGraph: FunctionDependencyGraph[] = functionCalleesMap.map(f => ({
         function: f.function,
         callers: [],
@@ -105,8 +106,8 @@ function getClassName(node: Parser.SyntaxNode): string | undefined {
     return undefined;
 }
 
-function createTreeFromSourceFile(file: string): Parser.Tree {
-    const code = fs.readFileSync(file, 'utf-8');
+async function createTreeFromSourceFile(file: string): Promise<Parser.Tree> {
+    const code = await fs.promises.readFile(file, 'utf-8');
     const tree = parser.parse(code);
     return tree;
 }
@@ -131,7 +132,7 @@ function createAliasMap(tree: Parser.Tree): Record<string, string> {
     return aliasMap;
 }
 
-function createVarTypeMap(tree: Parser.Tree): Record<string, string> {
+function createVarTypeMap(node: Parser.SyntaxNode): Record<string, string> {
     const varTypeMap: Record<string, string> = {};
     const varTypeQuery = new Parser.Query(
             parser.getLanguage(),
@@ -140,7 +141,7 @@ function createVarTypeMap(tree: Parser.Tree): Record<string, string> {
                 right: (call
                     function: (identifier) @var.type))`
         );
-    const varTypeMatches = varTypeQuery.matches(tree.rootNode);
+    const varTypeMatches = varTypeQuery.matches(node);
     for (const match of varTypeMatches) {
         const varName = match.captures.find(v => v.name === 'var.name')?.node.text;
         const varType = match.captures.find(v => v.name === 'var.type')?.node.text;
@@ -174,7 +175,7 @@ function resolveCallee(calleeMatch: Parser.QueryMatch,
             const callee = functions.find(f => f.name === method && f.class === resolvedClass);
             return callee;
         } else if (directName) {
-            const callee = functions.find(f => f.name === directName && f.file === file) ?? functions.find(f => f.name === directName);
+            const callee = functions.find(f => f.name === directName && f.file === file);
             return callee;
         }
 }

@@ -124,7 +124,7 @@ suite('Function Extraction Test Suite', () => {
 
     test('extracts all functions from a file', async() => {
         const files = [fixturesPath('test_extract_function/test_extract_file_1.py')];
-        const result = extractFunctionsFromFiles(files);
+        const result = await extractFunctionsFromFiles(files);
         assert.strictEqual(result.length, 1);
         assert.deepStrictEqual(result, [
             makeFunctionInfo('bark', fixturesPath('test_extract_function/test_extract_file_1.py'), 'Dog')
@@ -133,13 +133,13 @@ suite('Function Extraction Test Suite', () => {
 
     test('returns empty array when no functions found', async() => {
         const files = [fixturesPath('test_extract_function/test_extract_empty_file.py')];
-        const result = extractFunctionsFromFiles(files);
+        const result = await extractFunctionsFromFiles(files);
         assert.strictEqual(result.length, 0);
     });
 
     test('extracts functions from multiple files', async() => {
         const files = [fixturesPath('test_extract_function/test_extract_file_1.py'), fixturesPath('test_extract_function/test_extract_file_2.py')];
-        const result = extractFunctionsFromFiles(files);
+        const result = await extractFunctionsFromFiles(files);
         assert.strictEqual(result.length, 5);
         assert.deepStrictEqual(result, [
             makeFunctionInfo('bark', fixturesPath('test_extract_function/test_extract_file_1.py'), 'Dog'),
@@ -152,7 +152,7 @@ suite('Function Extraction Test Suite', () => {
 
     test('extracts functions from files with no classes', async() => {
         const files = [fixturesPath('test_extract_function/test_extract_file_3.py')];
-        const result = extractFunctionsFromFiles(files);
+        const result = await extractFunctionsFromFiles(files);
         assert.strictEqual(result.length, 3);
         assert.deepStrictEqual(result, [
             makeFunctionInfo('meow', fixturesPath('test_extract_function/test_extract_file_3.py'), undefined),
@@ -170,7 +170,7 @@ suite('Function Callees Mapping Test Suite', () => {
             makeFunctionInfo('meow', fixturesPath('test_map_callees/test_map_function_1.py'), 'Cat'),
             makeFunctionInfo('cat_sound', fixturesPath('test_map_callees/test_map_function_1.py'), undefined)
         ];
-        const result = mapCalleesToFunction(files, functions);
+        const result = await mapCalleesToFunction(files, functions);
         assert.strictEqual(result.length, 2);
         assert.deepStrictEqual(result, [
             { 
@@ -192,7 +192,7 @@ suite('Function Callees Mapping Test Suite', () => {
             makeFunctionInfo('meow', fixturesPath('test_map_callees/test_map_function_1.py'), 'Cat'),
             makeFunctionInfo('cat_sound', fixturesPath('test_map_callees/test_map_function_1.py'), undefined)
        ];
-       const result = mapCalleesToFunction(files, functions);
+       const result = await mapCalleesToFunction(files, functions);
        assert.strictEqual(result.length, 2);
        assert.deepStrictEqual(result, [
             { 
@@ -214,7 +214,7 @@ suite('Function Callees Mapping Test Suite', () => {
             makeFunctionInfo('save_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order'),
             makeFunctionInfo('validate_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order')
         ];
-        const result = mapCalleesToFunction(files, functions);
+        const result = await mapCalleesToFunction(files, functions);
         assert.strictEqual(result.length, 4);
         assert.deepStrictEqual(result, [
             {   
@@ -241,7 +241,7 @@ suite('Function Callees Mapping Test Suite', () => {
         const functions = [
             makeFunctionInfo('call_print', fixturesPath('test_map_callees/test_map_function_4.py'), 'CallOtherLibrary'),
         ];
-        const result = mapCalleesToFunction(files, functions);
+        const result = await mapCalleesToFunction(files, functions);
         assert.strictEqual(result.length, 1);
         assert.deepStrictEqual(result, [
             {
@@ -264,7 +264,7 @@ suite('Function Callees Mapping Test Suite', () => {
             makeFunctionInfo('save_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order'),
             makeFunctionInfo('validate_order', fixturesPath('test_map_callees/test_map_function_3.py'), 'Order')
         ];
-        const result = mapCalleesToFunction(files, functions);
+        const result = await mapCalleesToFunction(files, functions);
         assert.strictEqual(result.length, 8);
         assert.deepStrictEqual(result, [
             { 
@@ -327,7 +327,7 @@ suite('Build Function Dependency Graph Test Suite', () => {
         }
     ];
 
-        const result = buildFunctionDependencyGraph(functionCalleesMap);
+        const result = await buildFunctionDependencyGraph(functionCalleesMap);
         assert.strictEqual(result.length, 4);
         assert.deepStrictEqual(result, [
             {
@@ -382,7 +382,7 @@ suite('Build Function Dependency Graph Test Suite', () => {
         }
     ];
 
-        const result = buildFunctionDependencyGraph(functionCalleesMap);
+        const result = await buildFunctionDependencyGraph(functionCalleesMap);
         assert.strictEqual(result.length, 6);
         assert.deepStrictEqual(result, [
             {
@@ -439,7 +439,7 @@ suite('Build Function Dependency Graph Test Suite', () => {
             }
         ];
 
-        const result = buildFunctionDependencyGraph(functionCalleesMap);
+        const result = await buildFunctionDependencyGraph(functionCalleesMap);
         assert.strictEqual(result.length, 4);
         assert.deepStrictEqual(result, [
             {
@@ -470,14 +470,13 @@ suite('Build Function Dependency Graph Test Suite', () => {
     test('If callees map is empty, return []', async() => {
         const functionCalleesMap = undefined;
         
-        const result = buildFunctionDependencyGraph(functionCalleesMap);
+        const result = await buildFunctionDependencyGraph(functionCalleesMap);
         assert.strictEqual(result.length, 0);
         assert.deepStrictEqual(result, []);
     });
 });
 
 suite('Map Selected Text to Dependency Graph', () => {
-    // test 1: selected text is a function and returns its dependencies
     test('selected text is a function and returns the node from graph', async() => {
         const selectedText = 'process_order';
         const functionDependencyGraph = [
@@ -526,7 +525,6 @@ suite('Map Selected Text to Dependency Graph', () => {
         });
     });
     
-    // test 2: selected text is not a function returns an error
     test('returns undefined when selected text is not function', async() => {
         const selectedText = 'aaa';
         const functionDependencyGraph = [

@@ -7,6 +7,7 @@ import { getSelectedText,
 	mapCalleesToFunction, 
 	buildFunctionDependencyGraph, 
 	mapSelectedTextToFunctionGraph } from './extraction';
+import { generateVisualFromDependencyNode } from './visualiser';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -28,14 +29,14 @@ export function activate(context: vscode.ExtensionContext) {
 	
 	const extractFunctionsDisposable = vscode.commands.registerCommand('codeflow.extractFunctions', async () => {
 		const files = await extractFilesFromWorkspace(vscode.workspace.findFiles);
-		const functions = extractFunctionsFromFiles(files);
-		const functionCalleeMap = mapCalleesToFunction(files, functions);
-		const functionDependencyGraph = buildFunctionDependencyGraph(functionCalleeMap);
+		const functions = await extractFunctionsFromFiles(files);
+		const functionCalleeMap = await mapCalleesToFunction(files, functions);
+		const functionDependencyGraph = await buildFunctionDependencyGraph(functionCalleeMap);
 		const editor = vscode.window.activeTextEditor;
 		const selectedText = getSelectedText(editor!);
 		const functionNodeView = mapSelectedTextToFunctionGraph(selectedText, functionDependencyGraph)
 		functionNodeView ? 
-		vscode.window.showInformationMessage(`Function Map found: ${JSON.stringify(functionNodeView)}`) : 
+		generateVisualFromDependencyNode(functionNodeView, context): 
 		vscode.window.showErrorMessage('Text selected is not a function');
 	});
 
